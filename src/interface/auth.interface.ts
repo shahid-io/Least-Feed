@@ -6,4 +6,5 @@ export interface Auth {
     email: string;
     password: string;
     status: string;
+    created_at?: string;
 }
