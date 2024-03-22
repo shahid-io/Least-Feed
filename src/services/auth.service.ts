@@ -1,18 +1,17 @@
+import bcrypt from 'bcrypt';
 import { connection } from '../config/db.config';
 import { AUTH_QUERY } from '../query/auth.query';
-
+import { generateToken } from "../utils/helper";
 export class AuthService {
-    private pool: any
-    constructor() {
-        this.pool = null;
+
+    private pool: any;
+    constructor(pool: any) {
+        this.pool = pool;
     }
-    async initialize() {
-        try {
-            this.pool = await connection();
-        } catch (error: unknown) {
-            console.error('Error initializing database connection:', error);
-            throw error;
-        }
+
+    static async createInstance(): Promise<AuthService> {
+        const pool = await connection();
+        return new AuthService(pool);
     }
 
 
@@ -23,12 +22,23 @@ export class AuthService {
                 throw new Error('Database connection not initialized');
             }
             const result: any = await this.pool.query(AUTH_QUERY.SELECT_USER_BY_EMAIL, user.email);
-            if (result && result.length > 0) {
-                const fetchedUser = result[0];
-                console.log(fetchedUser);
-            } else {
+            if (!result || result.length === 0) {
                 throw new Error('User not found');
+            }            
+            const fetchedUser = result[0];
+            const passwordIsValid = await bcrypt.compare(user.password, fetchedUser[0].password);
+            if (!passwordIsValid) {
+                throw new Error('Invalid password');
             }
+            const token = await generateToken(result[0])
+            return {
+                message: "Login successful",
+                token: token,
+                user: {
+                    id: fetchedUser[0].id,
+                    email: fetchedUser[0].email,
+                }
+            };
         } catch (error: unknown) {
             console.error('Error signing in:', error);
             throw error;
