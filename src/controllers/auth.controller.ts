@@ -1,3 +1,5 @@
+import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
 import { Request, Response } from 'express';
 import { connection } from '../config/db.config';
 import { Code } from '../enum/code.enum';
@@ -7,17 +9,15 @@ import { AUTH_QUERY } from '../query/auth.query';
 import { Feed } from '../interface/feed.interface';
 import { Auth } from '../interface/auth.interface';
 import { AUTH_MESSAGE } from '../enum/auth.message.enum';
-import bcrypt from 'bcrypt';
-import dotenv from 'dotenv'
 import { AuthService } from '../services/auth.service';
+import { Loggs } from "../utils/helper";
 dotenv.config()
 
-export const signin = async(req: Request, res: Response)=>{
-    console.info(`[${new Date().toLocaleString()}] Incoming ${req.method}${req.originalUrl} Request from ${req.rawHeaders[0]} ${req.rawHeaders[1]}`);
+export const signin = async (req: Request, res: Response) => {
+    Loggs(req);
     try {
         let user: any = { ...req.body };
-        const authService = new AuthService();
-        await authService.initialize();
+        const authService = await AuthService.createInstance();
         const data = await authService.signin(user)
         return res.status(Code.CREATED)
             .send(new HttpResponse(Code.CREATED, Status.CREATED, AUTH_MESSAGE.CREATED_SUCCESS, data));
@@ -29,7 +29,7 @@ export const signin = async(req: Request, res: Response)=>{
 }
 
 export const getUsers = async (req: Request, res: Response) => {
-    console.info(`[${new Date().toLocaleString()}] Incoming ${req.method}${req.originalUrl} Request from ${req.rawHeaders[0]} ${req.rawHeaders[1]}`);
+    Loggs(req);
     try {
         const pool = await connection();
         const result: any = await pool.query(AUTH_QUERY.SELECT_USERS);
@@ -42,7 +42,7 @@ export const getUsers = async (req: Request, res: Response) => {
 }
 
 export const getUser = async (req: Request, res: Response) => {
-    console.info(`[${new Date().toLocaleString()}] Incoming ${req.method}${req.originalUrl} Request from ${req.rawHeaders[0]} ${req.rawHeaders[1]}`);
+    Loggs(req);
     try {
         const pool = await connection();
         const result: any = await pool.query(AUTH_QUERY.SELECT_USER, [req.params.userId]);
@@ -60,11 +60,11 @@ export const getUser = async (req: Request, res: Response) => {
 }
 
 export const createUser = async (req: Request, res: Response): Promise<Response<Feed>> => {
-    console.info(`[${new Date().toLocaleString()}] Incoming ${req.method}${req.originalUrl} Request from ${req.rawHeaders[0]} ${req.rawHeaders[1]}`);
+    Loggs(req);
     let user: Auth = { ...req.body };
     try {
         const pool = await connection();
-        let saltRounds = 10; 
+        let saltRounds = 10;
         const saltRoundsEnv = process.env.SALT_ROUND;
         if (saltRoundsEnv && !isNaN(parseInt(saltRoundsEnv))) {
             saltRounds = parseInt(saltRoundsEnv);
@@ -84,7 +84,7 @@ export const createUser = async (req: Request, res: Response): Promise<Response<
 };
 
 export const updateUser = async (req: Request, res: Response): Promise<Response<Feed>> => {
-    console.info(`[${new Date().toLocaleString()}] Incoming ${req.method}${req.originalUrl} Request from ${req.rawHeaders[0]} ${req.rawHeaders[1]}`);
+    Loggs(req);
     let user: Auth = { ...req.body };
     try {
         const pool = await connection();
@@ -105,7 +105,7 @@ export const updateUser = async (req: Request, res: Response): Promise<Response<
 };
 
 export const deleteUser = async (req: Request, res: Response): Promise<Response<Feed>> => {
-    console.info(`[${new Date().toLocaleString()}] Incoming ${req.method}${req.originalUrl} Request from ${req.rawHeaders[0]} ${req.rawHeaders[1]}`);
+    Loggs(req);
     try {
         const pool = await connection();
         const result: any = await pool.query(AUTH_QUERY.SELECT_USER, [req.params.userId]);
