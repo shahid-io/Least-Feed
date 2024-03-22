@@ -4,13 +4,30 @@ import { Code } from '../enum/code.enum';
 import { Status } from '../enum/status.enum';
 import { HttpResponse } from '../domain/response';
 import { AUTH_QUERY } from '../query/auth.query';
-import { ResultSetHeader } from 'mysql2';
 import { Feed } from '../interface/feed.interface';
 import { Auth } from '../interface/auth.interface';
 import { AUTH_MESSAGE } from '../enum/auth.message.enum';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv'
+import { AuthService } from '../services/auth.service';
 dotenv.config()
+
+export const signin = async(req: Request, res: Response)=>{
+    console.info(`[${new Date().toLocaleString()}] Incoming ${req.method}${req.originalUrl} Request from ${req.rawHeaders[0]} ${req.rawHeaders[1]}`);
+    try {
+        let user: any = { ...req.body };
+        const authService = new AuthService();
+        await authService.initialize();
+        const data = await authService.signin(user)
+        return res.status(Code.CREATED)
+            .send(new HttpResponse(Code.CREATED, Status.CREATED, AUTH_MESSAGE.CREATED_SUCCESS, data));
+    } catch (error: unknown) {
+        console.error(error);
+        return res.status(Code.INTERNAL_SERVER_ERROR)
+            .send(new HttpResponse(Code.INTERNAL_SERVER_ERROR, Status.INTERNAL_SERVER_ERROR, 'An error occurred'));
+    }
+}
+
 export const getUsers = async (req: Request, res: Response) => {
     console.info(`[${new Date().toLocaleString()}] Incoming ${req.method}${req.originalUrl} Request from ${req.rawHeaders[0]} ${req.rawHeaders[1]}`);
     try {
@@ -23,7 +40,6 @@ export const getUsers = async (req: Request, res: Response) => {
             .send(new HttpResponse(Code.INTERNAL_SERVER_ERROR, Status.INTERNAL_SERVER_ERROR, 'An error occurred'));
     }
 }
-
 
 export const getUser = async (req: Request, res: Response) => {
     console.info(`[${new Date().toLocaleString()}] Incoming ${req.method}${req.originalUrl} Request from ${req.rawHeaders[0]} ${req.rawHeaders[1]}`);
