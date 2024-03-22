@@ -8,3 +8,8 @@ export interface Auth {
     status: string;
     created_at?: string;
 }
+
+export interface Signin {
+    email: string;
+    password: string;
+} 

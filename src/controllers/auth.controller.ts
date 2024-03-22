@@ -7,7 +7,7 @@ import { Status } from '../enum/status.enum';
 import { HttpResponse } from '../domain/response';
 import { AUTH_QUERY } from '../query/auth.query';
 import { Feed } from '../interface/feed.interface';
-import { Auth } from '../interface/auth.interface';
+import { Auth, Signin } from '../interface/auth.interface';
 import { AUTH_MESSAGE } from '../enum/auth.message.enum';
 import { AuthService } from '../services/auth.service';
 import { Loggs } from "../utils/helper";
@@ -16,7 +16,7 @@ dotenv.config()
 export const signin = async (req: Request, res: Response) => {
     Loggs(req);
     try {
-        let user: any = { ...req.body };
+        let user: Signin = { ...req.body };
         const authService = await AuthService.createInstance();
         const data = await authService.signin(user)
         return res.status(Code.CREATED)
